@@ -8,7 +8,7 @@ make -C backend/native
 python3 scripts/package.py
 ```
 
-Attach `dist/vscode-altirra-debug-0.1.2.vsix` to a GitHub release. Include the source
+Attach `dist/vscode-altirra-debug-0.1.3.vsix` to a GitHub release. Include the source
 at the same release tag and platform/tool prerequisites. Users can install the VSIX
 through **Extensions → … → Install from VSIX** or the `code` CLI.
 The GitHub CI workflow runs portable tests and uploads a packaged VSIX artifact.

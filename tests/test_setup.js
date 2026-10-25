@@ -2,6 +2,8 @@
 const assert=require('assert'),os=require('os'),fs=require('fs'),path=require('path');
 const {configure,warnConflict,validateFile}=require('../src/setup');
 (async()=>{
+ const manifest=require('../package.json');
+ for(const key of ['altirraPath','atasmPath','pythonPath','winePath','winebootPath'])assert.equal(manifest.contributes.configuration.properties['altirra-debug.'+key].scope,'resource');
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'altirra setup '));
  try {
  const file=path.join(dir,'Altirra64.exe');fs.writeFileSync(file,'test');

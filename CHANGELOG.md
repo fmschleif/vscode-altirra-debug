@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+Declare tool-path settings with resource scope so the setup wizard can save them
+for an individual workspace folder.
+
 ## 0.1.2
 
 Add guided tool configuration, workspace-specific tool lookup, pre-launch path
