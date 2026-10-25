@@ -1,24 +1,4 @@
-# Put this project in your GitHub repository
-
-This folder is an independent repository candidate. It does not need anything
-from the original AtariVMem checkout. A local source folder/VSIX does not create
-a GitHub repository or publish an extension automatically.
-
-1. Create an empty repository named `vscode-altirra-debug` under your account.
-2. Review LICENSE, NOTICE, the package name and the support matrix.
-3. From this folder, initialize Git if needed and push to your repository:
-
-```sh
-git init -b main
-git add .
-git commit -m "Initial standalone Altirra debugger"
-git remote add origin https://github.com/YOUR_USER/vscode-altirra-debug.git
-git push -u origin main
-```
-
-If a local `.git` already exists, skip `git init`. If `origin` already exists,
-inspect it before changing it. Repository names are unique within an account;
-using this name here does not reserve a Marketplace extension/publisher identity.
+# Packaging and publishing
 
 ## Distribute a VSIX through GitHub
 
@@ -40,7 +20,7 @@ The package currently uses local development publisher ID `altirra-debug-local`.
 Before Marketplace publishing:
 
 - Register/use your own publisher account and set `package.json.publisher`.
-- Add your actual `repository`, `homepage` and `bugs` URLs to package.json.
+- Verify the `repository`, `homepage` and `bugs` URLs in package.json.
 - Review the public description and explicitly retain the Windows-experimental
   status until it has been tested on native Windows.
 - Follow Microsoft's current authentication and `vsce` instructions. Do not put
@@ -48,9 +28,6 @@ Before Marketplace publishing:
 
 Official instructions:
 [Publishing Extensions](https://code.visualstudio.com/api/working-with-extensions/publishing-extension).
-An account-specific Marketplace identity and a GitHub repository are different
-things. The standalone debug type `altirra-debug` is distinct from the former
-local `atarivmem` integration, so both can be installed during migration.
 
 ## Source-only archive
 

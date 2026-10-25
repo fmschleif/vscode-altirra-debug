@@ -57,7 +57,6 @@ The test creates a workspace/cache with spaces in the default paths. It checks
 source entry, real breakpoints, step, staged register/RAM writes, range watches,
 CPU data breakpoints, paused/live images and keyboard input. It needs a graphical
 session and a dedicated Wine prefix; Wine's initial setup needs disk space/time.
-No original game or framework is used.
 
 ## Contributor workflow
 

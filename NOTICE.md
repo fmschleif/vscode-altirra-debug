@@ -1,9 +1,7 @@
 # Notices
 
 The extension, Python backend, syntax rules, example and C helper are distributed
-under GPL-3.0-only; see LICENSE. The debugger tools were extracted and generalized
-from the author's local AtariVMem development tooling. The virtual-memory implementation
-and its application protocol are not included or required.
+under GPL-3.0-only; see LICENSE.
 
 Altirra is a separate application by Avery Lee and other contributors. Its binary,
 source tree, firmware and assets are not included. The helper speaks Altirra's

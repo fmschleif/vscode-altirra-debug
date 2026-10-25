@@ -4,8 +4,7 @@ Debug Atari 8-bit assembly in Visual Studio Code with Altirra as the emulator.
 Source breakpoints, stepping, registers, watches and memory edits stay in VS Code.
 An embedded Atari display accepts keyboard input without switching to the emulator.
 
-This is a standalone extension. It does not require a virtual-memory framework,
-a joystick bridge, a local HTTP server, or changes to the Atari program.
+The extension builds and debugs ATasm programs directly through Altirra.
 
 **Status:** early developer release. Linux x86-64 with Wine and Altirra 4.10 is the
 primary test environment. A native Windows x64 path is implemented but has not yet
