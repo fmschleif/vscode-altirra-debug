@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "altirra-debug",
+      "request": "launch",
+      "name": "Altirra: standalone playground",
+      "source": "${workspaceFolder}/main.asm",
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": true,
+      "watchLabels": [
+        "COUNTER",
+        "OBSERVED",
+        "LASTKEY",
+        "CONSOLEBYTE"
+      ]
+    }
+  ]
+}

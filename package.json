@@ -1,0 +1,329 @@
+{
+  "name": "vscode-altirra-debug",
+  "displayName": "Altirra Debug for ATasm",
+  "description": "Source debugging, editable CPU registers, memory access breakpoints and an embedded Altirra display for Atari 8-bit ATasm projects.",
+  "version": "0.1.0",
+  "publisher": "altirra-debug-local",
+  "license": "GPL-3.0-only",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Debuggers",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "Atari",
+    "6502",
+    "Altirra",
+    "ATasm"
+  ],
+  "main": "./src/extension.js",
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [
+    "onDebug:altirra-debug",
+    "onCommand:altirra-debug.debug"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": false
+  },
+  "scripts": {
+    "test": "node scripts/python.js scripts/test.py",
+    "package": "node scripts/python.js scripts/package.py"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "altirra-debug.debug",
+        "title": "Altirra: Debug Active File"
+      },
+      {
+        "command": "altirra-debug.display",
+        "title": "Altirra: Show Atari Display"
+      },
+      {
+        "command": "altirra-debug.inspect",
+        "title": "Altirra: Inspect Memory"
+      },
+      {
+        "command": "altirra-debug.refresh",
+        "title": "Altirra: Refresh Memory Views"
+      },
+      {
+        "command": "altirra-debug.edit",
+        "title": "Altirra: Change Memory Bytes"
+      },
+      {
+        "command": "altirra-debug.export",
+        "title": "Altirra: Copy Memory as Hex"
+      },
+      {
+        "command": "altirra-debug.dataBreakpoint",
+        "title": "Altirra: Add Memory Access Breakpoint"
+      },
+      {
+        "command": "altirra-debug.doctor",
+        "title": "Altirra: Check Setup"
+      }
+    ],
+    "configuration": {
+      "title": "Altirra Debug",
+      "properties": {
+        "altirra-debug.altirraPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Altirra64.exe; the emulator is not bundled."
+        },
+        "altirra-debug.atasmPath": {
+          "type": "string",
+          "default": "atasm",
+          "description": "ATasm executable path or name on PATH."
+        },
+        "altirra-debug.pythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Python 3.10+ executable. Empty uses python3 on Linux and python on Windows."
+        },
+        "altirra-debug.winePath": {
+          "type": "string",
+          "default": "wine",
+          "description": "Wine executable on Linux."
+        },
+        "altirra-debug.winebootPath": {
+          "type": "string",
+          "default": "wineboot",
+          "description": "wineboot executable on Linux."
+        },
+        "altirra-debug.displayFps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 20,
+          "description": "Maximum visible display refresh rate. Hidden panels do not capture frames."
+        },
+        "altirra-debug.enableDebugKeys": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable explicit F5/Shift+F5 bindings in this workspace. Other extensions can still override these; see troubleshooting."
+        }
+      }
+    },
+    "debuggers": [
+      {
+        "type": "altirra-debug",
+        "label": "Altirra / ATasm",
+        "languages": [
+          "atasm",
+          "asm"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "ATasm entry source, e.g. ${workspaceFolder}/main.asm"
+              },
+              "program": {
+                "type": "string",
+                "description": "Prebuilt XEX (also provide symbols and listing)"
+              },
+              "symbols": {
+                "type": "string",
+                "description": "ATasm .lab file for a prebuilt program"
+              },
+              "listing": {
+                "type": "string",
+                "description": "ATasm .lst file for a prebuilt program"
+              },
+              "cwd": {
+                "type": "string",
+                "default": "${workspaceFolder}",
+                "description": "Working directory for relative source/include/binary paths"
+              },
+              "entry": {
+                "type": "string",
+                "description": "Optional entry label; otherwise read the XEX RUNAD vector"
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "default": true
+              },
+              "includePaths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "defines": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "number"
+                  ]
+                }
+              },
+              "assemblerArgs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "watchLabels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": [],
+                "description": "Byte labels to show in the Memory Labels scope"
+              },
+              "diskRoot": {
+                "type": "string",
+                "description": "Optional MyDOS asset directory, including DOS.SYS; freshly built XEX is added as AUTORUN.SYS"
+              },
+              "diskPacker": {
+                "type": "string",
+                "default": "unix2atr",
+                "description": "External unix2atr executable; only needed with diskRoot"
+              },
+              "diskSectors": {
+                "type": "integer",
+                "default": 720,
+                "minimum": 720
+              },
+              "hardware": {
+                "type": "string",
+                "enum": [
+                  "800xl",
+                  "800",
+                  "5200"
+                ],
+                "default": "800xl"
+              },
+              "kernel": {
+                "type": "string",
+                "default": "lle",
+                "description": "Altirra /kernel value; built-in LLE OS by default"
+              },
+              "video": {
+                "type": "string",
+                "enum": [
+                  "pal",
+                  "ntsc"
+                ],
+                "default": "pal"
+              },
+              "altirraPath": {
+                "type": "string",
+                "description": "Path to Altirra64.exe; the emulator is not bundled."
+              },
+              "atasmPath": {
+                "type": "string",
+                "description": "ATasm executable path or name on PATH."
+              },
+              "pythonPath": {
+                "type": "string",
+                "description": "Python 3.10+ executable. Empty uses python3 on Linux and python on Windows."
+              },
+              "winePath": {
+                "type": "string",
+                "description": "Wine executable on Linux."
+              },
+              "winebootPath": {
+                "type": "string",
+                "description": "wineboot executable on Linux."
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "altirra-debug",
+            "request": "launch",
+            "name": "Altirra: Debug ATasm",
+            "source": "${workspaceFolder}/main.asm",
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": true
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Altirra: assemble and debug",
+            "body": {
+              "type": "altirra-debug",
+              "request": "launch",
+              "name": "Altirra: Debug ATasm",
+              "source": "${workspaceFolder}/main.asm",
+              "stopOnEntry": true
+            }
+          }
+        ]
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "atasm"
+      },
+      {
+        "language": "asm"
+      }
+    ],
+    "languages": [
+      {
+        "id": "atasm",
+        "aliases": [
+          "ATasm 6502"
+        ],
+        "extensions": [
+          ".asm",
+          ".inc"
+        ],
+        "configuration": "./language.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "atasm",
+        "scopeName": "source.atasm",
+        "path": "./atasm.tmLanguage.json"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "f6",
+        "command": "altirra-debug.debug",
+        "when": "editorLangId == atasm && !inDebugMode"
+      },
+      {
+        "key": "f5",
+        "command": "workbench.action.debug.start",
+        "when": "config.altirra-debug.enableDebugKeys && !inDebugMode"
+      },
+      {
+        "key": "f5",
+        "command": "workbench.action.debug.continue",
+        "when": "debugType == altirra-debug && debugState == stopped"
+      },
+      {
+        "key": "shift+f5",
+        "command": "workbench.action.debug.stop",
+        "when": "debugType == altirra-debug && inDebugMode"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fmschleif/vscode-altirra-debug.git"
+  },
+  "homepage": "https://github.com/fmschleif/vscode-altirra-debug#readme",
+  "bugs": {
+    "url": "https://github.com/fmschleif/vscode-altirra-debug/issues"
+  }
+}
