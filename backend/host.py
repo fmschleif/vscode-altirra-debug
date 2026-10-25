@@ -153,7 +153,8 @@ class Backend:
 
     def call(self,command,body):
         if command=='doctor':
-            return dict(platform=sys.platform,python=sys.version.split()[0],altirra=executable(body.get('altirraPath',''),'Altirra',os.name!='nt'),atasm=executable(body.get('atasmPath','atasm'),'ATasm'),wine=executable(body.get('winePath','wine'),'Wine') if os.name!='nt' else 'native',helper=(Path(__file__).parent/'native/altirra_ipc.exe').is_file())
+            if sys.version_info<(3,10):raise ValueError('Python 3.10 or newer is required')
+            return dict(platform=sys.platform,python=sys.version.split()[0],wineboot=executable(body.get('winebootPath','wineboot'),'wineboot') if os.name!='nt' else 'native',altirra=executable(body.get('altirraPath',''),'Altirra',os.name!='nt'),atasm=executable(body.get('atasmPath','atasm'),'ATasm'),wine=executable(body.get('winePath','wine'),'Wine') if os.name!='nt' else 'native',helper=(Path(__file__).parent/'native/altirra_ipc.exe').is_file())
         if command in ('stop','dap/stop'):return self.stop()
         with self.lock:
             if command=='launch':return self.launch(body)

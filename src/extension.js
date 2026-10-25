@@ -5,14 +5,15 @@ const path=require('path');
 const {Backend}=require('./backend');
 const {Adapter}=require('./adapter');
 const {registerDisplay}=require('./display');
+const {configure,warnConflict}=require('./setup');
 
 function activate(context) {
     const output=vscode.window.createOutputChannel('Altirra Debug');
     let current;
     const changed=new vscode.EventEmitter(),views=new Map();
-    function settings() {return vscode.workspace.getConfiguration('altirra-debug');}
+    function settings(folder) {return vscode.workspace.getConfiguration('altirra-debug',folder?.uri);}
     function defaults(folder,config={}) {
-        const s=settings();
+        const s=settings(folder);
         return {...config,cwd:config.cwd||folder?.uri.fsPath||vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
             altirraPath:config.altirraPath||s.get('altirraPath',''),atasmPath:config.atasmPath||s.get('atasmPath','atasm'),
             pythonPath:config.pythonPath||(s.get('pythonPath','')||(process.platform==='win32'?'python':'python3')),
@@ -24,13 +25,19 @@ function activate(context) {
         return current.backend.call(command,body);
     }
     const provider={
-        resolveDebugConfiguration(folder,config) {
+        async resolveDebugConfiguration(folder,config) {
             if(!vscode.workspace.isTrusted){vscode.window.showErrorMessage('Trust this workspace before building and debugging.');return;}
-            const result=defaults(folder,config);
+            let result=defaults(folder,config);
             result.type='altirra-debug';result.request='launch';result.name=result.name||'Altirra: Debug ATasm';
             if(!result.source&&!result.program)result.source=vscode.window.activeTextEditor?.document.uri.fsPath;
             if(!result.source&&!result.program){vscode.window.showErrorMessage('Set source or program in launch.json.');return;}
-            if(!result.altirraPath){vscode.window.showErrorMessage('Set altirra-debug.altirraPath to Altirra64.exe in Settings.');return;}
+            if(!result.altirraPath){if(!await configure(vscode,folder))return;result={...result,...defaults(folder,config)};}
+            await warnConflict(vscode,context);
+            try {await check(result);}catch(error){
+                const choice=await vscode.window.showErrorMessage('Altirra setup: '+error.message,'Configure Tools');
+                if(choice==='Configure Tools')await vscode.commands.executeCommand('altirra-debug.setup');
+                return;
+            }
             return result;
         }
     };
@@ -84,7 +91,19 @@ function activate(context) {
     register('export',async()=>{const m=await memory();if(!m)return;const r=await call('dap/read',{address:m.address,count:m.length});await vscode.env.clipboard.writeText([...Buffer.from(r.data,'base64')].map(x=>x.toString(16).toUpperCase().padStart(2,'0')).join(' '));});
     register('edit',async()=>{const m=await memory();if(!m)return;const hex=await vscode.window.showInputBox({prompt:'RAM bytes in hex; staged until next step/Continue',validateInput:v=>/^(?:[\da-fA-F]{2}\s*){1,4096}$/.test(v.trim())?null:'Use pairs such as 2A 00 FF'});if(!hex)return;await call('dap/write',{address:m.address,data:Buffer.from(hex.replace(/\s/g,''),'hex').toString('base64')});current.adapter.editing.edited();for(const uri of views.keys())changed.fire(vscode.Uri.parse(uri));});
     register('dataBreakpoint',async()=>{if(!current)throw Error('Start debugging first');await vscode.commands.executeCommand('workbench.debug.viewlet.action.addDataBreakpointOnAddress');});
-    register('doctor',async()=>{const cfg=defaults(vscode.workspace.workspaceFolders?.[0]);const backend=new Backend(context.extensionPath,cfg.pythonPath,text=>output.append(text));try{const report=await backend.call('doctor',cfg);output.appendLine(JSON.stringify(report,null,2));output.show(true);}finally{await backend.close();}});
+    async function check(cfg) {
+        const backend=new Backend(context.extensionPath,cfg.pythonPath,text=>output.append(text));
+        try {const report=await backend.call('doctor',cfg);if(!report.helper)throw Error('Native helper is missing; reinstall the extension');return report;}
+        finally {await backend.close();}
+    }
+    register('setup',async()=>{
+        const folder=vscode.workspace.workspaceFolders?.[0];
+        if(!await configure(vscode,folder))return;
+        const report=await check(defaults(folder));output.appendLine(JSON.stringify(report,null,2));
+        await warnConflict(vscode,context);
+        vscode.window.showInformationMessage('Altirra tools are ready. Select an Altirra configuration in Run and Debug, then click the green triangle.');
+    });
+    register('doctor',async()=>{const report=await check(defaults(vscode.workspace.workspaceFolders?.[0]));output.appendLine(JSON.stringify(report,null,2));output.show(true);vscode.window.showInformationMessage('Altirra tool paths are valid.');});
     registerDisplay(context,call);
     context.subscriptions.push({dispose:()=>{if(current){current.adapter.dispose();void current.backend.close();current=undefined;}}});
 }

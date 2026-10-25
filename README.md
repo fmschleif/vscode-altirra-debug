@@ -52,35 +52,36 @@ Download the `.vsix` from a release, or build one from this repository:
 
 ```sh
 python3 scripts/package.py
-code --install-extension dist/vscode-altirra-debug-0.1.1.vsix
+code --install-extension dist/vscode-altirra-debug-0.1.2.vsix
 ```
 
 On Windows use `python` instead of `python3`. A prebuilt x64 Windows helper is
 included with its corresponding C source. No npm dependencies or pip packages are
 needed for installation, tests or local packaging.
 
-Open VS Code Settings and search for **Altirra Debug**. Set:
+Run **Altirra: Configure Tools** from the Command Palette (**F1** or
+**Ctrl+Shift+P**). Select `Altirra64.exe`, then enter the ATasm and Python
+executables, plus Wine/wineboot on Linux. Commands already on PATH can retain
+their defaults. The wizard saves paths for the current workspace and checks them.
+Cancelling before the last prompt leaves the settings unchanged.
 
-```json
-{
-  "altirra-debug.altirraPath": "/path/to/Altirra64.exe",
-  "altirra-debug.atasmPath": "atasm",
-  "altirra-debug.pythonPath": "python3"
-}
-```
+A first launch with no Altirra path opens the wizard automatically. You can rerun
+**Altirra: Configure Tools** to change paths, or **Altirra: Check Setup** to validate
+them without launching the emulator. Paths can also be set in Settings under
+**Altirra Debug**, or overridden per launch configuration.
 
-Windows paths use JSON escaping, for example `"C:\\Atari\\Altirra64.exe"`.
-Do not set `altirraPath` to a shell command such as `wine Altirra64.exe`; use the
-actual `.exe` path. Linux/Wine `.exe` files need read permission, not the Linux
-executable bit. ATasm does need executable permission on Linux.
-
-Run **Altirra: Check Setup** from the command palette to check executable paths.
+If **Atasm Altirra Bridge** is installed, its F5 binding may start its own build.
+Use **Run and Debug** (**Ctrl+Shift+D**), select an **Altirra** configuration, and
+click the green triangle. For reliable F5 use, disable the conflicting extension
+**for this workspace**. Our extension warns about this conflict and provides a
+button to open the other extension's details.
 
 ## Try the independent playground
 
 1. Open **`examples/hello` as the VS Code folder**.
-2. Trust that folder and configure the tool paths above.
-3. Press F5 and select **Altirra: standalone playground**.
+2. Trust that folder and run **Altirra: Configure Tools**.
+3. Open **Run and Debug** (Ctrl+Shift+D), select **Altirra: standalone playground**,
+   and click the green triangle. F5 also works when no other extension intercepts it.
 4. The first stop is `START`. Add a breakpoint at `REGTEST` and Continue.
 5. In Variables, change A to `$55`; F10 executes the NOP, and the following
    `STORE` writes A to `OBSERVED`.

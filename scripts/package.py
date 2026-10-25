@@ -19,11 +19,14 @@ def package():
 <Installation><InstallationTarget Id="Microsoft.VisualStudio.Code"/></Installation><Dependencies/>
 <Assets><Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true"/></Assets></PackageManifest>'''
     files=[ROOT/n for n in ('package.json','README.md','CHANGELOG.md','LICENSE','NOTICE.md','language.json','atasm.tmLanguage.json')]
-    for directory in ('src','backend','docs','examples'):
+    for directory in ('src','backend','docs'):
         files.extend(p for p in (ROOT/directory).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix not in ('.pyc','.pyo'))
+    files.extend(ROOT/'examples/hello'/n for n in ('main.asm','.vscode/launch.json'))
     with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED) as archive:
         archive.writestr('extension.vsixmanifest',manifest)
         archive.writestr('[Content_Types].xml','<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="json" ContentType="application/json"/><Default Extension="js" ContentType="application/javascript"/><Default Extension="md" ContentType="text/markdown"/><Default Extension="vsixmanifest" ContentType="text/xml"/></Types>')
+        # Never package locally configured tool paths or generated example builds.
+        archive.writestr('extension/examples/hello/.vscode/settings.json',json.dumps({'files.associations':{'*.asm':'atasm','*.inc':'atasm'},'altirra-debug.enableDebugKeys':True},indent=2)+'\n')
         for path in sorted(set(files)):
             if path.exists():archive.write(path,'extension/'+path.relative_to(ROOT).as_posix())
     print(output)

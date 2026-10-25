@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+Add guided tool configuration, workspace-specific tool lookup, pre-launch path
+validation and a warning about competing ATasm F5 bindings. Setup cancellation
+leaves existing settings unchanged.
+
 ## 0.1.1
 
 Fix source breakpoints after stepping, register/RAM edits and data breakpoints
