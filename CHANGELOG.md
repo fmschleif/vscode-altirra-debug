@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+Keep the Atari Display in a stable second editor group. Show Atari Display now
+brings the panel into focus; automatic opening preserves source-editor focus.
+
 ## 0.1.3
 
 Declare tool-path settings with resource scope so the setup wizard can save them

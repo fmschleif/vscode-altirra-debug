@@ -72,11 +72,12 @@ api.postMessage({action:'ready'});
             if(panel===target && epoch===generation)await post(target,{type:'status',text:vscode.debug.activeDebugSession&&vscode.debug.activeDebugSession.type==='altirra-debug'?'Starting the debug emulator — waiting for its first frame…':'No debug framebuffer available. Start Altirra Debug with F5.'});
         } finally {busy=false;}
     }
-    function open() {
-        if(panel){panel.reveal(vscode.ViewColumn.Beside,true);return;}
+    function open(preserveFocus=false) {
+        // Use a stable editor group; Beside can create another split on each reveal.
+        if(panel){panel.reveal(vscode.ViewColumn.Two,preserveFocus);return;}
         lastSequence=undefined;lastImage=undefined;auto=true;
         panel=vscode.window.createWebviewPanel('altirra-debug.display','Atari Display',
-            {viewColumn:vscode.ViewColumn.Beside,preserveFocus:true},
+            {viewColumn:vscode.ViewColumn.Two,preserveFocus},
             {enableScripts:true,localResourceRoots:[],retainContextWhenHidden:true});
         panel.webview.html=html();
         panel.onDidDispose(()=>{epoch++;clearInterval(timer);panel=undefined;void keyboard({action:"release"}).catch(()=>{});});
@@ -98,8 +99,8 @@ api.postMessage({action:'ready'});
         });
         timer=setInterval(()=>{void refresh().catch(()=>{});},Math.round(1000/fps));
     }
-    context.subscriptions.push(vscode.commands.registerCommand('altirra-debug.display',open),
-        vscode.debug.onDidStartDebugSession(session=>{if(session.type==='altirra-debug'){epoch++;lastSequence=undefined;lastRunning=undefined;open();void post(panel,{type:'reset'});}}),
+    context.subscriptions.push(vscode.commands.registerCommand('altirra-debug.display',()=>open(false)),
+        vscode.debug.onDidStartDebugSession(session=>{if(session.type==='altirra-debug'){epoch++;lastSequence=undefined;lastRunning=undefined;open(true);void post(panel,{type:'reset'});}}),
         {dispose:()=>{clearInterval(timer);if(panel)panel.dispose();}});
 }
 module.exports={registerDisplay};

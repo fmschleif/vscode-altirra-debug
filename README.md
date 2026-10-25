@@ -52,7 +52,7 @@ Download the `.vsix` from a release, or build one from this repository:
 
 ```sh
 python3 scripts/package.py
-code --install-extension dist/vscode-altirra-debug-0.1.3.vsix
+code --install-extension dist/vscode-altirra-debug-0.1.4.vsix
 ```
 
 On Windows use `python` instead of `python3`. A prebuilt x64 Windows helper is

@@ -1,25 +1,27 @@
 const assert=require('assert');
 const Module=require('module');
 const vm=require('vm');
-let handler,html,frame,custom,dispose,pending,failPost=false;const keyboardEvents=[];
+let handler,html,frame,custom,dispose,pending,failPost=false,start,placement,reveal;const keyboardEvents=[];
 const commands=new Map();
 const panel={visible:true,webview:{
  set html(value){html=value;},
  onDidReceiveMessage(callback){handler=callback;},
  async postMessage(message){if(failPost)throw Error("disposed webview");frame=message;}
-},onDidDispose(callback){dispose=callback;},dispose(){dispose();},reveal(){}};
+},onDidDispose(callback){dispose=callback;},dispose(){dispose();},reveal(column,preserveFocus){reveal={column,preserveFocus};}};
 const fake={
- ViewColumn:{Beside:2},
+ ViewColumn:{Two:2},
  commands:{registerCommand(name,fn){commands.set(name,fn);return {dispose(){}};}},
- window:{createWebviewPanel(type,title,placement,options){assert(placement.preserveFocus);assert.deepEqual(options.localResourceRoots,[]);return panel;},showErrorMessage(message){throw Error(message);}},
- debug:{onDidStartDebugSession(){return {dispose(){}};},activeDebugSession:{type:'altirra-debug',async customRequest(command,args){custom={command,args};}}}
+ window:{createWebviewPanel(type,title,p,options){placement=p;assert.deepEqual(options.localResourceRoots,[]);return panel;},showErrorMessage(message){throw Error(message);}},
+ debug:{onDidStartDebugSession(fn){start=fn;return {dispose(){}};},activeDebugSession:{type:'altirra-debug',async customRequest(command,args){custom={command,args};}}}
 };
 const original=Module._load;Module._load=function(name,...args){return name==='vscode'?fake:original.call(this,name,...args);};
 const context={subscriptions:[]};
 (async()=>{
  try {
   require('../src/display').registerDisplay(context,async command=>{if(command==='dap/keyboard'){keyboardEvents.push(command);return {};}assert.equal(command,'dap/screen');if(pending)return await pending;return {available:true,sequence:'1792940000000000000',png:'FRAME',running:false};});
-  commands.get('altirra-debug.display')();
+  start({type:'altirra-debug'});
+  assert.equal(placement.viewColumn,2);assert.equal(placement.preserveFocus,true);
+  commands.get('altirra-debug.display')();assert.deepEqual(reveal,{column:2,preserveFocus:false});
   new vm.Script(html.match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/)[1]);
   assert(html.includes("default-src 'none'"));assert(html.includes('img-src data:'));
   await handler({action:'ready'});assert.equal(frame.type,'frame');assert.equal(frame.png,'FRAME');

@@ -2,7 +2,7 @@
   "name": "vscode-altirra-debug",
   "displayName": "Altirra Debug for ATasm",
   "description": "Source debugging, editable CPU registers, memory access breakpoints and an embedded Altirra display for Atari 8-bit ATasm projects.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "altirra-debug-local",
   "license": "GPL-3.0-only",
   "engines": {
