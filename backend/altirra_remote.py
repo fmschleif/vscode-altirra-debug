@@ -183,7 +183,9 @@ class RemoteSession(DebugEditing):
         return dict(breakpoints=result)
 
     def commands(self):
-        cmds=['bc *','bc hold.*']
+        # Altirra 4.10 named-group deletion can retain stale indices.
+        # This isolated session owns all numbered breakpoints; rebuild them together.
+        cmds=['bc *']
         for point in sorted({x for points in self.points.values() for x in points}):
             cmds.append('bp $%04X ".batch dap-capture.atdbg"' % point)
         return cmds+self.memory_break_commands()
@@ -200,7 +202,7 @@ class RemoteSession(DebugEditing):
             if mode=='next' and pc is not None and self.ram[pc]==0x20:
                 commands.append('bp -o $%04X ".batch dap-capture.atdbg"' % ((pc+3)&65535))
             else:
-                commands.append('bx -g hold "pc >= 0" ".batch dap-capture.atdbg"')
+                commands.append('bx "pc >= 0" ".batch dap-capture.atdbg"')
         if mode not in ('continue','step','next','pause'):
             raise ValueError('Unsupported resume mode')
         self.running=True

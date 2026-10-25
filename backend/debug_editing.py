@@ -93,9 +93,9 @@ class DebugEditing:
         return dict(breakpoints=results)
 
     def memory_break_commands(self):
-        commands=['bc data.*']
+        commands=[]
         for point in self.data_points:
             modes=('r','w') if point['mode']=='readWrite' else ('r',) if point['mode']=='read' else ('w',)
             for mode in modes:
-                commands.append('ba -g data %s $%04X L%X ".batch dap-data.atdbg"'%(mode,point['address'],point['length']))
+                commands.append('ba %s $%04X L%X ".batch dap-data.atdbg"'%(mode,point['address'],point['length']))
         return commands

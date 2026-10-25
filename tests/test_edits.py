@@ -32,6 +32,19 @@ class EditTests(unittest.TestCase):
         self.assertEqual((self.s.state/'dap-patch-0.bin').read_bytes(),b'\x55\x66')
         self.assertFalse(self.s.pending_memory)
 
+    def test_breakpoints_rebuild_without_named_groups(self):
+        self.s.points={'main.asm':[0x2010]}
+        self.s.set_data_breakpoints(dict(breakpoints=[dict(dataId='ram:24576:1',accessType='write')]))
+        self.s.resume('step')
+        commands=self.s.send.call_args[0][0]
+        self.assertEqual(commands[0], 'bc *')
+        self.assertIn('bp $2010 ".batch dap-capture.atdbg"', commands)
+        self.assertIn('ba w $6000 L1 ".batch dap-data.atdbg"', commands)
+        self.assertIn('bx "pc >= 0" ".batch dap-capture.atdbg"', commands)
+        self.assertFalse(any('-g ' in c or '.*' in c for c in commands))
+        self.s.set_data_breakpoints(dict(breakpoints=[]))
+        self.assertFalse(any(c.startswith('ba ') for c in self.s.commands()))
+
     def test_reject_overflow_rom_io_and_running_edits(self):
         for name,value in [('A','256'),('PC','$10000'),('FAKE','1')]:
             with self.assertRaises(ValueError): self.s.set_register(dict(name=name,value=value))
@@ -47,8 +60,8 @@ class EditTests(unittest.TestCase):
         reply=self.s.set_data_breakpoints(dict(breakpoints=[dict(dataId=info['dataId'],accessType='readWrite')]))
         self.assertTrue(reply['breakpoints'][0]['verified'])
         commands=self.s.commands()
-        self.assertTrue(any('data r $6000 L100' in c for c in commands))
-        self.assertTrue(any('data w $6000 L100' in c for c in commands))
+        self.assertTrue(any('ba r $6000 L100' in c for c in commands))
+        self.assertTrue(any('ba w $6000 L100' in c for c in commands))
         self.s.send.assert_not_called()
         self.assertIsNone(self.s.data_info(dict(name='$FFF0',bytes=32))['dataId'])
 

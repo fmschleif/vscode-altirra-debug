@@ -52,7 +52,7 @@ Download the `.vsix` from a release, or build one from this repository:
 
 ```sh
 python3 scripts/package.py
-code --install-extension dist/vscode-altirra-debug-0.1.0.vsix
+code --install-extension dist/vscode-altirra-debug-0.1.1.vsix
 ```
 
 On Windows use `python` instead of `python3`. A prebuilt x64 Windows helper is
@@ -129,10 +129,6 @@ MyDOS assets, defines and supported emulator settings.
 
 ## Limits worth knowing
 
-The combined emulator regression test still has an unresolved intermittent failure
-when console-key source breakpoints follow register edits, stepping and data
-breakpoints. Isolated keyboard/console tests pass, but this sequence is not yet
-reliable. Treat this version as experimental rather than a stable release.
 
 This is a 6502/64-KiB debugger, not a reconstruction of Altirra's full debugger UI.
 There is one CPU stack frame; Step Out, reverse debugging, conditional breakpoints
