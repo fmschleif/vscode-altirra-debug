@@ -12,7 +12,10 @@
         "COUNTER",
         "OBSERVED",
         "LASTKEY",
-        "CONSOLEBYTE"
+        "KEYCOUNT",
+        "CONSOLEBYTE",
+        "LASTCONSOLE",
+        "CONSOLECOUNT"
       ]
     }
   ]
